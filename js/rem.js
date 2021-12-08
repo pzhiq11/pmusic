@@ -11,7 +11,7 @@ function remSize(){
     }
     if(deviceWidth>=1000){
         deviceWidth = 1080
-        totalCss.style.marginLeft=600+'px';
+        totalCss.style.marginLeft=550+'px';
         document.documentElement.style.fontSize = (deviceWidth/15)+'px';
     }
     if(deviceWidth<=320){
