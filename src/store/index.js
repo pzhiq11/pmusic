@@ -73,7 +73,7 @@ export default createStore({
     async reqLyric(content, payload) {
       //  console.log(payload);
       let result = await getLyric(payload.id);
-      content.commit('setLyric', result.data.lrc.lyric)
+      content.commit('setLyric', result.data?.lrc?.lyric)
       // console.log(result);
 
 
@@ -105,7 +105,7 @@ export default createStore({
   getters: {
     // 歌词的处理
     lyricList:function(state){
-      let arr = state.lyric.split(/\n/igs).map((item,i,arr)=>{
+      let arr = state.lyric?.split(/\n/igs).map((item,i,arr)=>{
          let min = parseInt(item.slice(1,3)) ;
          let sec = parseInt(item.slice(4,6)) ;
          let mill = parseInt(item.slice(7,10));
@@ -120,7 +120,7 @@ export default createStore({
        }
      })
      
-     arr.forEach((item,i)=>{
+     arr?.forEach((item,i)=>{
        if(i==0){
          item.pre = 0;
        }else{
