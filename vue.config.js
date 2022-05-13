@@ -1,5 +1,5 @@
 // const path = require('path')
-module.exprots = {
+module.exports = {
         // proxy:{
         //     '/api':{
         //         target:'http://music.cpengx.cn',
