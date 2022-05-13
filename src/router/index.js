@@ -44,6 +44,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/MvDetail.vue')
   },
   {
+    path: '/magic',
+    name: 'magic',
+    component: () => import(/* webpackChunkName: "about" */ '../views/magic.vue')
+  },
+  {
     path: '/me',
     name: 'me',
     beforeEnter:(to,from,next)=>{
