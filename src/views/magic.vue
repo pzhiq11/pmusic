@@ -25,11 +25,9 @@ export default {
             2 +
             ".jpg);background-size: 300px 300px;";
           arr[n].appendChild(divs);
-
           // 改变每一个div的位置
           divs.style.left = 100 * j + "px";
           divs.style.top = 100 * i + "px";
-
           // 改变背景图相应的位置
           divs.style.backgroundPositionX = -j * 100 + "px";
           divs.style.backgroundPositionY = -i * 100 + "px";
