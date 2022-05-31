@@ -1,0 +1,5346 @@
+<template>
+  <div w-class="page" >
+    <!-- 记录板 -->
+    <div w-class="highscore">
+      <div><span style="fontSize:35px;color:#c0c5c9">HIGH SCORE</span></div>
+      <span style="fontSize:60px;color:#2c3e50">{{highS}}</span>
+    </div>
+    <!-- 帮助 -->
+    <div w-class="help">
+      <ImgMap name="btn_help"  w-class="pwh_100" v-if="!istart" ></ImgMap>
+    </div>
+   
+   
+    
+    <!-- 六边形背景 防止砖块被后渲染的图层挡住 -->
+    <div w-class="box_base" >
+      <!-- 正矩形 -->
+      <div w-class="div_base" :style="{backgroundColor: istart?'#bdc3c7':'#dcdfe1'}"></div>
+      <!-- 旋转60度矩形 -->
+      <div w-class="div_base div2_base" :style="{backgroundColor: istart?'#bdc3c7':'#dcdfe1'}"></div>
+      <!-- 旋转60度矩形 -->
+      <div w-class="div_base div3_base" :style="{backgroundColor: istart?'#bdc3c7':'#dcdfe1'}"></div>
+    </div>
+
+    <!-- 大六边形 及下落砖块 -->
+    <div w-class="box" v-if="istart">
+      <!-- 正矩形 -->
+      <div w-class="div1" >
+        <!-- 砖块 -->
+        <div w-class="blick_item1" id="blick_item1" :style="{top:brickTop+'px',transform:'scaleX('+brickScale+')',borderColor:brickColor}"></div>
+        <div  id="blick_item2" ></div>
+      </div>
+      <div w-class="div2" >
+        <!-- 砖块 -->
+        <div w-class="blick_item1" id="blick_item1" ></div>
+        <div  id="blick_item2" ></div>
+      </div>
+      <div w-class="div3" >
+        <!-- 砖块 -->
+        <div w-class="blick_item1" id="blick_item1" ></div>
+        <div  id="blick_item2" ></div>
+      </div>
+      
+    </div>
+    <!-- 内部六边形 -->
+    <div w-class="scale5" :style="{transform: 'rotate('+deg+'deg)'}" v-if="ress">
+        <div  w-class="div11" >
+          <template v-if="istart && list_top">
+          <div w-class="blick_item11"  v-for="(v,i) in list_top" :key="i" :style="{top:v.top +'px',transform: 'scaleX('+v.scale_top+')',borderColor: v.color,position:v.position}" ></div>
+          </template>
+          <template v-if="istart && list_bottom">
+          <div w-class="blick_item22"  v-for="(v,i) in list_bottom" :key="i" :style="{bottom:v.bottom +'px',transform: 'scaleX('+v.scale_bottom+')',borderColor: v.color,position:v.position}"></div>
+          </template>
+        </div>
+        <div  w-class="div22" >
+          <template v-if="istart && list_top45">
+          <div w-class="blick_item11"  v-for="(v,i) in list_top45" :key="i" :style="{top:v.top +'px',transform: 'scaleX('+v.scale_top+')',borderColor: v.color,position:v.position}" ></div>
+          </template>
+          <template v-if="istart && list_bottom45">
+          <div w-class="blick_item22"  v-for="(v,i) in list_bottom45" :key="i" :style="{bottom:v.bottom +'px',transform: 'scaleX('+v.scale_bottom+')',borderColor: v.color,position:v.position}"></div>
+          </template>
+        </div>
+        <div w-class="div33" >
+          <template v-if="istart && list_top_45">
+          <div w-class="blick_item11"  v-for="(v,i) in list_top_45" :key="i" :style="{top:v.top +'px',transform: 'scaleX('+v.scale_top+')',borderColor: v.color,position:v.position}" ></div>
+          </template>
+          <template v-if="istart && list_bottom_45">
+          <div w-class="blick_item22"  v-for="(v,i) in list_bottom_45" :key="i" :style="{bottom:v.bottom +'px',transform: 'scaleX('+v.scale_bottom+')',borderColor: v.color,position:v.position}"></div>
+          </template>
+        </div>
+        
+    </div>
+    <!-- logo -->
+    <div w-class="Hextris" v-if="!istart">
+      <span style="fontSize:280px;color:#2c3e50">Hextris</span>
+    </div>
+    <div w-class="planSpan" v-if="!istart">
+      <span style="fontSize:50px;color:#2c3e50">Play!</span>
+    </div>
+    <!-- 开始游戏 -->
+    <div w-class="play" >
+        <div v-if="istart"><span style="fontSize:150px">{{score}}</span></div>
+        <ImgMap name="play_game"  w-class="pwh_100" v-if="!istart" @tap="StartGame()"></ImgMap>
+    </div>
+    <!-- 旋转按钮 -->
+    <div w-class="test" @tap="rotateBoxR()" v-if="istart">
+      <span style="fontSize:60px;color:#2c3e50">To Right</span>
+    </div>
+    <div w-class="test2" @tap="rotateBoxL()" v-if="istart">
+      <span style="fontSize:60px;color:#2c3e50">To Left</span>
+    </div>
+    <!-- 暂停 -->
+    <div w-class="Paused" v-if="isPause">
+        <span style="fontSize:150px;color:#2c3e50">Game Paused</span>
+    </div>
+    <div w-class="btn_resume" @tap="pause()" v-if="istart">
+      <ImgMap name="btn_pause"  w-class="pwh_100"  v-if="!isPause"></ImgMap>
+      <ImgMap name="btn_resume"  w-class="pwh_100" v-if="isPause" ></ImgMap>
+    </div>
+     <!-- 重新开始 -->
+    <div w-class="btn_restart" @tap="restart()" id="rest">
+      <ImgMap name="btn_restart"  w-class="pwh_100" v-if="istart" ></ImgMap>
+    </div>
+    <!-- 退出 -->
+    <div w-class="close" @tap="closePage()">
+      <span style="font-size: 45px">退出</span>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { findElementByAttr, Widget } from "pi_gui/widget/direct";
+import { close, popNew } from "pi_gui/main";
+import ImgMap from "pi_gui/ui/imgmap.vue";
+import BrickRemov from "app_c/brick_remove/brick_remove.vue";
+import { str } from "pi_gui/engine/gui_lib";
+
+class Animatable {
+  target: Element; // 动画操作目标，为gui的一个节点
+  animations: Map<string, RuntimeAnimation>; // 节点上的所有动画
+}
+class RuntimeAnimation {
+  name: string; // 动画名称
+  animaCfg: Animation; // 动画数据
+  duration: number; // 运行时长
+  delayTime: number; // 延时时间
+  iteration: number; // 重复次数
+  direction: number; // 播放模式
+  fillMode: "none" | "forwards" | "backwards" | "both" = "none"; // 结束时状态
+}
+export default class BrickRemove implements Widget {
+  public istart: boolean; //是否开始
+  public ress: boolean;
+  public deg: number; //旋转角度
+  public score: number; //得分
+  public highS: number; //最高纪录
+  public i1: number; //控制每个方向砖块初始值
+  public i2: number;
+  public i3: number;
+  public i4: number;
+  public i5: number;
+  public i6: number;
+  public type: string; //判断当前旋转后砖块位于哪个方向
+  public randomNum; //随机数控制颜色
+  public brickTop: number; // 砖块top值控制位置
+  public brickScale: number; // 砖块scale值控制缩放
+  public jieliu: boolean;
+  public zanting: boolean; //是否暂停
+  public gameover: boolean; //游戏是否结束
+  public isPause: boolean; //是否暂停
+  public speed: number; //砖块下落速度
+  public colorArr = ["#3498db", "#2ecc71", "#f1c40f", "#e74c3c"]; //砖块全部颜色
+
+  public brickColor = ""; ///* 实时砖块颜色 绿色：#2ecc71  黄色：#f1c40f  蓝色：#3498db 红色：#e74c3c  */
+
+  // 各个方向砖块数组
+  public list_top = [];
+  public list_bottom = [];
+  public list_top45 = [];
+  public list_bottom45 = [];
+  public list_top_45 = [];
+  public list_bottom_45 = [];
+
+  // 六边形
+  public brickList = [
+    {
+      name: "div1",
+      nameL: "div11",
+    },
+    {
+      name: "div2",
+      nameL: "div22",
+    },
+    {
+      name: "div3",
+      nameL: "div33",
+    },
+  ];
+  public StartGame(){
+    this.play_game()
+  }
+  //开始游戏
+  public play_game = (
+    brickTop?: number,
+    brickScale?: number,
+    brickC?: string,
+    randomNum?: string
+  ) => {
+    this.istart = true;
+    this.brickTop = brickTop || -150;
+    this.brickScale = brickScale || 1.3;
+    this.brickColor = brickC || "";
+    this.randomNum = randomNum || Math.floor(Math.random() * Math.floor(4));
+    // console.log(this.randomNum);
+    let brickLang = setInterval(() => {
+      // type控制在哪个方向 i* 控制砖块应该在哪一层
+      if (this.type == "i1") {
+        if (this.i1 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 0) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-83, 1.45, this.brickColor);
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 0) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-125, 1.65, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 0) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-165, 1.87, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 0) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-41, 1.25, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 0) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-205, 2.1, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 0) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-245, 2.35, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 0) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-285, 2.6, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 0) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-325, 2.9, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 0) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-365, 3.2, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i1 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      } else if (this.type == "i2") {
+        if (this.i2 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 60) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-83, 1.45, this.brickColor);
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 60) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-125, 1.65, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 60) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-165, 1.87, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 60) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-41, 1.25, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 60) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-205, 2.1, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 60) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-245, 2.35, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 60) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-285, 2.6, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 60) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-325, 2.9, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 60) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-365, 3.2, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i2 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      } else if (this.type == "i3") {
+        if (this.i3 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 120) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-83, 1.45, this.brickColor);
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 120) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-125, 1.65, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 120) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-165, 1.87, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 120) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-41, 1.25, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 120) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-205, 2.1, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 120) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-245, 2.35, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 120) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-285, 2.6, this.brickColor);
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 120) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-325, 2.9, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 120) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else {
+              this.addItem(-365, 3.2, this.brickColor);
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i3 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      } else if (this.type == "i4") {
+        if (this.i4 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 180) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 180) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 180) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 180) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 180) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 180) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 180) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 180) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 180) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i4 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      } else if (this.type == "i5") {
+        if (this.i5 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 240) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 240) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 240) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 240) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 240) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 240) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 240) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 240) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 240) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 300) {
+              this.type = "i6";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i5 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      } else if (this.type == "i6") {
+        if (this.i6 == 1) {
+          //i来控制到第几层
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 265 && this.brickScale <= 0.46) {
+            if (this.deg == 300) {
+              this.addItem(-83, 1.45, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 2) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 225 && this.brickScale <= 0.54) {
+            if (this.deg == 300) {
+              this.addItem(-125, 1.65, this.brickColor);
+              //   this.checkColor(oldColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 3) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 185 && this.brickScale <= 0.62) {
+            if (this.deg == 300) {
+              this.addItem(-165, 1.87, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 0) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 305 && this.brickScale <= 0.4) {
+            if (this.deg == 300) {
+              this.addItem(-41, 1.25, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 4) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 145 && this.brickScale <= 0.7) {
+            if (this.deg == 300) {
+              this.addItem(-205, 2.1, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 5) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 105 && this.brickScale <= 0.78) {
+            if (this.deg == 300) {
+              this.addItem(-245, 2.35, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 6) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 65 && this.brickScale <= 0.86) {
+            // if (this.deg >= 0 && this.deg < 180) {
+            if (this.deg == 300) {
+              this.addItem(-285, 2.6, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            //   this.checkColor(oldColor);
+
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 7) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= 25 && this.brickScale <= 0.94) {
+            if (this.deg == 300) {
+              this.addItem(-325, 2.9, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 8) {
+          this.brickColor = this.colorArr[this.randomNum];
+          this.brickTop += 5;
+          this.brickScale -= 0.0101;
+          if (this.brickTop >= -20 && this.brickScale <= 1) {
+            if (this.deg == 300) {
+              this.addItem(-365, 3.2, this.brickColor);
+            } else if (this.deg == 60) {
+              this.type = "i2";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 120) {
+              this.type = "i3";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 180) {
+              this.type = "i4";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 240) {
+              this.type = "i5";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            } else if (this.deg == 0) {
+              this.type = "i1";
+              clearInterval(brickLang);
+              this.brickTop = this.brickTop;
+              this.brickScale = this.brickScale;
+              this.brickColor = this.brickColor;
+              this.randomNum = this.randomNum;
+              this.play_game(
+                this.brickTop,
+                this.brickScale,
+                this.brickColor,
+                String(this.randomNum)
+              );
+              return;
+            }
+            clearInterval(brickLang);
+            this.play_game();
+          }
+        } else if (this.i6 == 9) {
+          clearInterval(brickLang);
+          let oldS = Number(localStorage.getItem("highS"));
+          if (oldS <= this.score) {
+            localStorage.setItem("highS", this.score.toString());
+          }
+          popNew("app_a-widget-tips-tips", {
+            text: "Game over! your score is :" + this.score,
+          });
+          // alert("Game over! your score is :" + this.score);
+          clearInterval(brickLang);
+          this.gameover = true;
+          return;
+        }
+        if (this.zanting) {
+          clearInterval(brickLang);
+          this.brickTop = this.brickTop;
+          this.brickScale = this.brickScale;
+          this.brickColor = this.brickColor;
+          this.randomNum = this.randomNum;
+        }
+      }
+    }, this.speed);
+  };
+  // 增加砖块方法 并消除连续两次相同颜色砖块
+  public addItem(
+    top?: number,
+    scale?: number,
+    color?: string,
+    position?: string
+  ) {
+    let item = {
+      top: top,
+      scale_top: scale,
+      color: color,
+      position: position ? position : "absolute",
+    };
+    let item1 = {
+      bottom: top,
+      scale_bottom: scale,
+      color: color,
+      position: "absolute",
+    };
+    if (this.deg == 0) {
+      this.list_top.push(item);
+      this.i1++;
+      if (this.list_top.length < 2) return;
+      if (
+        this.list_top[this.list_top.length - 1].color ==
+        this.list_top[this.list_top.length - 2].color
+      ) {
+        this.list_top.splice(this.list_top.length - 2, 2);
+        this.i1 -= 2;
+        this.score += 10;
+      }
+    } else if (this.deg == 60) {
+      this.list_top_45.push(item);
+      this.i2++;
+      if (this.list_top_45.length < 2) return;
+      if (
+        this.list_top_45[this.list_top_45.length - 1].color ==
+        this.list_top_45[this.list_top_45.length - 2].color
+      ) {
+        this.list_top_45.splice(this.list_top_45.length - 2, 2);
+        this.i2 -= 2;
+        this.score += 10;
+      }
+    } else if (this.deg == 120) {
+      this.list_bottom45.push(item1);
+      this.i3++;
+      if (this.list_bottom45.length < 2) return;
+      if (
+        this.list_bottom45[this.list_bottom45.length - 1].color ==
+        this.list_bottom45[this.list_bottom45.length - 2].color
+      ) {
+        this.list_bottom45.splice(this.list_bottom45.length - 2, 2);
+        this.i3 -= 2;
+        this.score += 10;
+      }
+    } else if (this.deg == 180) {
+      this.list_bottom.push(item1);
+      this.i4++;
+      if (this.list_bottom.length < 2) return;
+      if (
+        this.list_bottom[this.list_bottom.length - 1].color ==
+        this.list_bottom[this.list_bottom.length - 2].color
+      ) {
+        this.list_bottom.splice(this.list_bottom.length - 2, 2);
+        this.i4 -= 2;
+        this.score += 10;
+      }
+    } else if (this.deg == 240) {
+      this.list_bottom_45.push(item1);
+      this.i5++;
+      if (this.list_bottom_45.length < 2) return;
+      if (
+        this.list_bottom_45[this.list_bottom_45.length - 1].color ==
+        this.list_bottom_45[this.list_bottom_45.length - 2].color
+      ) {
+        this.list_bottom_45.splice(this.list_bottom_45.length - 2, 2);
+        this.i5 -= 2;
+        this.score += 10;
+      }
+    } else if (this.deg == 300) {
+      this.list_top45.push(item);
+      this.i6++;
+      if (this.list_top45.length < 2) return;
+      if (
+        this.list_top45[this.list_top45.length - 1].color ==
+        this.list_top45[this.list_top45.length - 2].color
+      ) {
+        this.list_top45.splice(this.list_top45.length - 2, 2);
+        this.i6 -= 2;
+        this.score += 10;
+      }
+    }
+    this.pass(this.score);
+  }
+  // 达到一定分数 ，砖块加速
+  public pass(pass: number) {
+    let passNth = parseInt((pass / 100).toString());
+    console.log("**********" + passNth);
+    switch (passNth) {
+      case 0:
+        this.speed = 40;
+        break;
+      case 1:
+        this.speed = 35;
+        break;
+      case 2:
+        this.speed = 30;
+        break;
+      case 3:
+        this.speed = 25;
+        break;
+      case 4:
+        this.speed = 20;
+        break;
+      case 5:
+        this.speed = 15;
+        break;
+      case 6:
+        this.speed = 10;
+        break;
+    }
+  }
+  // 向右旋转中间六边形
+  public rotateBoxR = () => {
+    if (this.jieliu) return;
+    this.jieliu = true;
+    let old = this.deg; //300
+    let process = setInterval(() => {
+      this.deg += 6;
+      // console.log(this.deg-old);
+      if (this.deg - old == 60) {
+        // console.log(this.deg);
+        this.jieliu = false;
+        clearInterval(process);
+        if (this.deg >= 360) {
+          this.deg = 0;
+        }
+      }
+    }, 0.05);
+    // //  console.log(this.deg);
+    // let brick = findElementByAttr(this, "id", "rest");
+    // console.log(brick.getBoundingClientRect());
+    // brick.getBoundingClientRect().left = 200;
+
+    //  console.log(brick.style);
+    //  console.log(brick.style._animatable.remove);
+    //  brick.style._animatable.remove()
+  };
+  // 向左旋转中间六边形
+  public rotateBoxL = () => {
+    if (this.jieliu) return;
+    this.jieliu = true;
+    if (this.deg <= 0) {
+      this.deg = 360;
+    }
+    let old1 = this.deg;
+    let process = setInterval(() => {
+      this.deg -= 6;
+      // console.log(this.deg-old);
+      if (old1 - this.deg == 60) {
+        this.jieliu = false;
+        // console.log(this.deg);
+        clearInterval(process);
+      }
+    }, 0.05);
+  };
+  // 重新开始游戏
+  public restart = () => {
+    // this.istart = false
+    if (this.gameover) {
+      this.play_game();
+    }
+    this.create();
+    this.istart = true;
+    popNew("app_a-widget-tips-tips", { text: "重新开始游戏！！！！" });
+    // alert("请重新开始游戏");
+  };
+  // 游戏暂停
+  public pause = () => {
+    // this.istart = false
+    this.zanting = !this.zanting;
+    this.isPause = !this.isPause;
+    if (!this.zanting) {
+      // console.log("  ////////////////");
+      this.play_game(
+        this.brickTop,
+        this.brickScale,
+        this.brickColor,
+        String(this.randomNum)
+      );
+    }
+  };
+
+  // 页面初始化
+  public create = () => {
+    this.highS = Number(localStorage.getItem("highS"));
+    this.istart = false; //是否开始
+    this.ress = true;
+    this.deg = 0; //旋转角度
+    this.score = 0; //得分
+    this.i1 = 0;
+    this.i2 = 0;
+    this.i3 = 0;
+    this.i4 = 0;
+    this.i5 = 0;
+    this.i6 = 0;
+    this.type = "i1";
+    this.brickTop = -150; // 砖块top值控制位置
+    this.brickScale = 1.3; // 砖块scale值控制缩放
+    this.jieliu = false;
+    this.zanting = false;
+    this.colorArr = ["#3498db", "#2ecc71", "#f1c40f", "#e74c3c"];
+    this.gameover = false;
+    this.isPause = false;
+    this.brickColor = ""; ///* 绿色：#2ecc71  黄色：#f1c40f  蓝色：#3498db 红色：#e74c3c*/
+    this.speed = 40;
+    this.list_top = [
+      // top值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+    this.list_bottom = [
+      // bottom值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+    this.list_top45 = [
+      // top值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+    this.list_bottom45 = [
+      // bottom值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+    this.list_top_45 = [
+      // top值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+    this.list_bottom_45 = [
+      // bottom值控制转盘的砖块 // scale控制转盘砖块的缩放倍数
+    ];
+  };
+  public closePage = () => {
+    this.create();
+    close(this);
+  };
+}
+</script>
+
+<style>
+@keyframes upUp {
+  0% {
+    bottom: -150px;
+    transform: scaleX(1.3);
+  }
+  50% {
+    bottom: 0px;
+    transform: scaleX(1);
+  }
+  100% {
+    bottom: 277px;
+    transform: scaleX(0.4);
+  }
+}
+@keyframes landing {
+  0% {
+    top: -150px;
+    transform: scaleX(1.3);
+  }
+  50% {
+    top: 0px;
+    transform: scaleX(1);
+  }
+  100% {
+    top: 265px;
+    transform: scaleX(0.46);
+  }
+}
+
+.page {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  justify-content: center;
+  align-items: center;
+  background-color: #ecf0f1;
+}
+.close {
+  position: absolute;
+  right: 100px;
+  top: 100px;
+  width: 100px;
+  height: 52px;
+}
+.pwh_100 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.help {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 120px;
+  height: 100px;
+}
+.btn_restart {
+  position: absolute;
+  bottom: 50px;
+  left: 50px;
+  width: 120px;
+  height: 100px;
+}
+.test {
+  position: absolute;
+  bottom: 250px;
+  right: 550px;
+  width: 250px;
+  height: 150px;
+  background-color: #dcdfe1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.test2 {
+  position: absolute;
+  bottom: 250px;
+  right: 850px;
+  width: 250px;
+  height: 150px;
+  background-color: #dcdfe1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn_resume {
+  position: absolute;
+  bottom: 50px;
+  right: 50px;
+  width: 120px;
+  height: 100px;
+}
+.highscore {
+  position: absolute;
+  left: 50%;
+  top: 50px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.Hextris {
+  position: absolute;
+  left: 50%;
+  top: 600px;
+  transform: translate(-50%, -50%);
+}
+.planSpan {
+  position: absolute;
+  left: 50%;
+  top: 1120px;
+  transform: translate(-50%, -50%);
+}
+
+/* base背景六边形布局 */
+.box_base {
+  position: absolute;
+  top: 400px;
+  left: 500px;
+}
+.div_base {
+  position: absolute;
+  width: 600px;
+  height: 1040px;
+  /* 开始后背景颜色 */
+  background-color: #bdc3c7;
+  /* 未开始时背景颜色 */
+  /* background-color: #dcdfe1;   */
+}
+.div2_base {
+  transform: rotate(60deg);
+}
+.div3_base {
+  transform: rotate(-60deg);
+}
+/* 真实显示的六边形布局 */
+.box {
+  position: absolute;
+  top: 400px;
+  left: 500px;
+}
+.div1 {
+  position: absolute;
+  width: 600px;
+  height: 1040px;
+  /* background-color: #bdc3c7; */
+}
+.div2 {
+  position: absolute;
+  width: 600px;
+  height: 1040px;
+  transform: rotate(60deg);
+  /* background-color: #bdc3c7; */
+}
+.div3 {
+  position: absolute;
+  width: 600px;
+  height: 1040px;
+  transform: rotate(-60deg);
+  /* background-color: #bdc3c7; */
+}
+/* 内部六边形 */
+.scale5 {
+  position: absolute;
+  top: 747px;
+  left: 700px;
+  width: 200px;
+  height: 346px;
+  background-color: #000;
+  transform-origin: 100px 173px;
+}
+.play {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  top: 857px;
+  left: 760px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.div11 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 346px;
+  background-color: #2c3e50;
+}
+.div22 {
+  position: absolute;
+  width: 200px;
+  height: 346px;
+  top: 0;
+  left: 0;
+  background-color: #2c3e50;
+  transform: rotate(60deg);
+}
+.div33 {
+  position: absolute;
+  width: 200px;
+  top: 0;
+  left: 0;
+  height: 346px;
+  background-color: #2c3e50;
+  transform: rotate(-60deg);
+}
+
+/* 绿色：#2ecc71  黄色：#f1c40f  蓝色：#3498db 红色：#e74c3c*/
+/* 砖块样式 */
+.blick_item1 {
+  /* 顶部 */
+  position: absolute;
+  top: 0px; /*  0 ~ 320px */
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-width: 40px 20px 0px 20px; /* 当不缩放时宽度为60px 缩放为0.39后砖块宽度为24左右*/
+  border-style: solid solid none solid;
+
+  /* transform: scale(1); 1  ~ 0.39  */
+  /* transform: scale(0.386); */
+}
+.blick_item2 {
+  /* 底部 */
+  position: absolute;
+  bottom: 0px; /*  0 ~ 320px */
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-width: 0 20px 40px 20px; /* 当不缩放时宽度为60px 缩放为0.39后砖块宽度为24左右*/
+  border-style: none solid solid solid;
+  border-color: #e74c3c;
+  /* transform: scale(1);  1  ~ 0.39  */
+  /* transform: scale(0.386); */
+}
+.blick_item11 {
+  /* 顶部 */
+
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-width: 40px 23px 0px 23px; /* 当不缩放时宽度为60px 缩放为0.39后砖块宽度为24左右*/
+  border-style: solid solid none solid;
+  border-color: #3498db;
+  /* transform: scale(1); 1  ~ 0.39  */
+  /* transform: scale(0.386); */
+}
+.blick_item22 {
+  /* 底部 */
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-width: 0 23px 40px 23px; /* 当不缩放时宽度为60px 缩放为0.39后砖块宽度为24左右*/
+  border-style: none solid solid solid;
+  border-color: #e74c3c;
+  /* transform: scale(1);  1  ~ 0.39  */
+  /* transform: scale(0.386); */
+}
+.Paused {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ecf0f1;
+  opacity: 0.85;
+}
+</style>
