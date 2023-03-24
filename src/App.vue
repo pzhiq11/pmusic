@@ -9,11 +9,22 @@
 <script>
  
 import playController from './components/playController.vue'
+import esm from "@pzhiq/esm"
 export default {
   components:{
     playController,
   },
   mounted(){
+    esm.event.on('test',()=>{
+      console.log("收到事件啦");
+    })
+    esm.store.on('mainData',(e)=>{
+      console.log("监听到值变化",e);
+    })
+    setTimeout(() => {
+      esm.event.emit("test");
+      esm.store.update("mainData",{level:5})
+    }, 2000);
     if(localStorage.userData ==null && localStorage.userData ==undefined){
       return   
     }
@@ -21,7 +32,7 @@ export default {
     // console.log(userData)
     
     this.$store.commit('setUser',userData);
-    
+
   },
   methods:{
     
