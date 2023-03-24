@@ -7,11 +7,13 @@
 <script>
 import playController from "./components/playController.vue";
 import esm from "@pzhiq/esm";
+import GuideManager from "@pzhiq/esm/dist/Guide/TutorialManager";
 export default {
   components: {
     playController,
   },
   mounted() {
+    // GuideManager.init();
     esm.event.on("test", () => {
       console.log("收到事件啦");
     });

@@ -7,7 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@pzhiq/esm": "^1.0.3",
+    "@pzhiq/esm": "^1.0.4",
     "axios": "^0.23.0",
     "core-js": "^3.6.5",
     "swiper": "^5.4.5",
